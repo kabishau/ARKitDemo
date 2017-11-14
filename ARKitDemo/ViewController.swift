@@ -17,6 +17,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         addBox()
+        addTapGestureToSceneView()
 
     }
     
@@ -54,6 +55,26 @@ class ViewController: UIViewController {
         /* can be refactored
          sceneView.scene.rootNode.addChildNode(boxNode)
         */
+    }
+    
+    func addTapGestureToSceneView() {
+        // initializing tapGestureRecognizer with targer set ViewController with the action selector set  to callback function
+        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(ViewController.didTap(withGestureRecognizer:)))
+        
+        // adding gesture recognizer to ARSceneView
+        sceneView.addGestureRecognizer(tapGestureRecognizer)
+    }
+    
+    @objc func didTap(withGestureRecognizer recognizer: UIGestureRecognizer) {
+        
+        // retrieving the user's tap location relative to sceneView, then hit test to see if user tapped onto any node(s)
+        let tapLocation = recognizer.location(in: sceneView)
+        let hitTestResults = sceneView.hitTest(tapLocation)
+        
+        // unwraping the first node from hitTestResults
+        guard let node = hitTestResults.first?.node else { return }
+        // if result contains at least a node - removing it from its parent node
+        node.removeFromParentNode()
     }
 
 }

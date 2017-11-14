@@ -32,7 +32,8 @@ class ViewController: UIViewController {
         sceneView.session.pause()
     }
     
-    func addBox() {
+    // adding parameters to the initial function with default values
+    func addBox(x: Float = 0, y: Float = 0, z: Float = 0.2) {
         
         // creating box shape; 1 float = 1 meter
         let box = SCNBox(width: 0.1, height: 0.1, length: 0.1, chamferRadius: 0)
@@ -42,19 +43,11 @@ class ViewController: UIViewController {
         // make the node visible by giving it a shape of box
         boxNode.geometry = box
         // positioning relatively to the camera; negative z = forward
-        boxNode.position = SCNVector3(0, 0, -0.2)
+        boxNode.position = SCNVector3(x, y, z)
         
         // creating SceneKit scene to be displaying in the view
-        let scene = SCNScene()
         // root node in a scene defines the coordinates of the real world rendering by SceneKit
-        scene.rootNode.addChildNode(boxNode)
-        // adding just created "scene" as a scene for ARcSeneView
-        sceneView.scene = scene
-        
-        
-        /* can be refactored
-         sceneView.scene.rootNode.addChildNode(boxNode)
-        */
+        sceneView.scene.rootNode.addChildNode(boxNode)
     }
     
     func addTapGestureToSceneView() {
@@ -72,10 +65,29 @@ class ViewController: UIViewController {
         let hitTestResults = sceneView.hitTest(tapLocation)
         
         // unwraping the first node from hitTestResults
-        guard let node = hitTestResults.first?.node else { return }
+        guard let node = hitTestResults.first?.node else {
+            // perform hit test with type featurePoint
+            let hitTestResultsWithFeaturePoints = sceneView.hitTest(tapLocation, types: .featurePoint)
+            // unwraping first hit test result
+            if let hitTestResultWithFeaturePoints = hitTestResultsWithFeaturePoints.first {
+                //
+                let translation = hitTestResultWithFeaturePoints.worldTransform.translation
+                addBox(x: translation.x, y: translation.y, z: translation.z)
+            }
+
+            return
+        }
         // if result contains at least a node - removing it from its parent node
         node.removeFromParentNode()
     }
 
+}
+
+// extenstion transform a matrix into float3, it gives us x, y, and z from the matrix
+extension float4x4 {
+    var translation: float3 {
+        let translation = self.columns.3
+        return float3(translation.x, translation.y, translation.z)
+    }
 }
 

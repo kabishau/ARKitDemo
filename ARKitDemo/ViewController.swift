@@ -11,6 +11,9 @@ import ARKit
 
 class ViewController: UIViewController {
 
+    @IBOutlet weak var sceneView: ARSCNView!
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
